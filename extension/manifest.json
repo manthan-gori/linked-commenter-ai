@@ -1,0 +1,62 @@
+{
+  "manifest_version": 3,
+  "name": "Linked Commenter AI",
+  "version": "1.0.0",
+  "description": "Generate personalized AI comments on LinkedIn using Multi-Model AI (Groq, Gemini, OpenAI, Claude) with zero tracking.",
+  "homepage_url": "https://github.com/manthan-gori/linked-commenter-ai",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "permissions": [
+    "storage",
+    "activeTab",
+    "declarativeContent"
+  ],
+  "host_permissions": [
+    "https://*.linkedin.com/*",
+    "https://linkedin.com/*",
+    "https://api.groq.com/*",
+    "https://generativelanguage.googleapis.com/*",
+    "https://api.openai.com/*",
+    "https://api.anthropic.com/*"
+  ],
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_title": "Linked Commenter AI - LinkedIn Comment Assistant",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://*.linkedin.com/*",
+        "https://linkedin.com/*"
+      ],
+      "js": [
+        "lib/groq-client.js",
+        "feed-engage.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "icons/*",
+        "lib/*"
+      ],
+      "matches": [
+        "https://*.linkedin.com/*",
+        "https://linkedin.com/*"
+      ]
+    }
+  ]
+}

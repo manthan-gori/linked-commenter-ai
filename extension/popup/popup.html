@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Linked Commenter AI - LinkedIn Comment Assistant</title>
+    <style>
+        :root {
+            --primary: #0a66c2;
+            --primary-hover: #004182;
+            --primary-light: rgba(10, 102, 194, 0.15);
+            --bg-color: #0f172a;
+            --surface-1: #192038;
+            --surface-2: #21294a;
+            --text-main: #e8eef7;
+            --text-muted: #8f9ab5;
+            --border: #2a3758;
+            --success: #3fb950;
+            --success-light: rgba(63, 185, 80, 0.15);
+            --error: #f85149;
+            --error-light: rgba(248, 81, 73, 0.15);
+            --warning: #d29922;
+            --warning-light: rgba(210, 153, 34, 0.15);
+            --radius: 8px;
+        }
+
+        /* AUTOMATIC LIGHT MODE DETECTION */
+        @media (prefers-color-scheme: light) {
+            :root {
+                --primary: #0a66c2;
+                --primary-hover: #004182;
+                --primary-light: rgba(10, 102, 194, 0.1);
+                --bg-color: #f3f4f6;
+                --surface-1: #ffffff;
+                --surface-2: #f9fafb;
+                --text-main: #111827;
+                --text-muted: #6b7280;
+                --border: #e5e7eb;
+                --success: #16a34a;
+                --success-light: rgba(22, 163, 74, 0.12);
+                --error: #dc2626;
+                --error-light: rgba(220, 38, 38, 0.12);
+                --warning: #d97706;
+                --warning-light: rgba(217, 119, 6, 0.12);
+            }
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            width: 340px;
+            padding: 16px;
+            background: var(--bg-color);
+            color: var(--text-main);
+            font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 12px;
+            transition: background 0.2s ease, color 0.2s ease;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 14px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .header img {
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+        }
+
+        .header h1, .header h2 {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .card {
+            background: var(--surface-1);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 12px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+        }
+
+        .card-title {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 600;
+            background: var(--surface-2);
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+        }
+
+        .badge.active {
+            background: var(--success-light);
+            color: var(--success);
+            border-color: rgba(63, 185, 80, 0.4);
+        }
+
+        .badge.error {
+            background: var(--error-light);
+            color: var(--error);
+            border-color: rgba(248, 81, 73, 0.4);
+        }
+
+        .input-group {
+            margin-bottom: 10px;
+        }
+
+        .input-group:last-child {
+            margin-bottom: 0;
+        }
+
+        label {
+            display: block;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 5px;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 6px;
+        }
+
+        input[type="text"],
+        input[type="password"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 7px 10px;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-main);
+            font-size: 12px;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.15s ease;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            border-color: var(--primary);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 52px;
+            line-height: 1.4;
+        }
+
+        button {
+            cursor: pointer;
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.15s ease;
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 8px;
+            background: var(--primary);
+            color: #ffffff;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-hover);
+        }
+
+        .btn-secondary {
+            width: 100%;
+            padding: 7px;
+            background: var(--surface-2);
+            color: var(--text-main);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .icon-btn {
+            padding: 7px 10px;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .icon-btn:hover {
+            color: var(--text-main);
+            border-color: var(--text-muted);
+        }
+
+        .link-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 10px;
+            padding: 2px 4px;
+            text-decoration: underline;
+        }
+
+        .link-btn:hover {
+            color: var(--primary);
+        }
+
+        .status-box {
+            margin-top: 10px;
+            padding: 8px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            line-height: 1.4;
+            display: none;
+            background: var(--surface-2);
+            border-left: 3px solid var(--primary);
+        }
+
+        .guide-box {
+            font-size: 11px;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        .guide-box ol {
+            padding-left: 18px;
+        }
+
+        .guide-box strong {
+            color: var(--text-main);
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-left">
+            <img src="../icons/icon48.png" alt="Logo" />
+            <h1 id="headerTitle">Linked Commenter AI</h1>
+        </div>
+        <button type="button" id="openToneManagerBtn" class="icon-btn" title="Customize Tones & Prompts" style="padding: 5px 8px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3"></circle>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+        </button>
+    </div>
+
+    <!-- MAIN SETTINGS VIEW -->
+    <div id="mainSettingsView">
+        <!-- NON-LINKEDIN TAB NOTICE (ONLY VISIBLE IF OPENED OUTSIDE LINKEDIN) -->
+        <div id="nonLinkedInBanner" class="card" style="display: none; background: var(--primary-light); border-color: rgba(10, 102, 194, 0.35); margin-bottom: 12px; padding: 10px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary); flex-shrink: 0;">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="2" y1="12" x2="22" y2="12"></line>
+                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                </svg>
+                <div>
+                    <div style="font-weight: 600; font-size: 11px; color: var(--text-main);">LinkedIn Only Extension</div>
+                    <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">This extension operates on LinkedIn. Open <a href="https://www.linkedin.com" target="_blank" style="color: var(--primary); text-decoration: underline;">linkedin.com</a> to use AI comment generation.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- API CONFIGURATION -->
+        <div class="card">
+            <div class="card-title">
+                <span>AI Provider &amp; Model</span>
+                <span id="aiStatusBadge" class="badge">Not configured</span>
+            </div>
+
+            <!-- PROVIDER SELECTOR -->
+            <div class="input-group">
+                <label for="aiProviderSelect">AI Engine / Provider</label>
+                <select id="aiProviderSelect">
+                    <option value="groq">Groq Cloud (Ultra Fast)</option>
+                    <option value="gemini">Google Gemini</option>
+                    <option value="openai">OpenAI (ChatGPT)</option>
+                    <option value="anthropic">Anthropic (Claude)</option>
+                </select>
+            </div>
+
+            <!-- GROQ CONFIG SECTION -->
+            <div id="groqConfigSection">
+                <div class="input-group">
+                    <label for="groqApiKeyInput">Groq API Key (console.groq.com)</label>
+                    <div class="input-row">
+                        <input type="password" id="groqApiKeyInput" placeholder="gsk_..." />
+                        <button type="button" id="toggleGroqKeyVisibilityBtn" class="icon-btn" title="Toggle visibility" aria-label="Toggle password visibility">
+                            <svg class="eye-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="groqModelSelect">Groq Model</label>
+                    <select id="groqModelSelect">
+                        <option value="groq/compound-mini">groq/compound-mini (No Limit TPD)</option>
+                        <option value="groq/compound">groq/compound (No Limit TPD)</option>
+                        <option value="qwen/qwen3.8-27b">qwen/qwen3.8-27b (2M TPD)</option>
+                        <option value="allam-2-7b">allam-2-7b (500K TPD)</option>
+                        <option value="qwen/qwen3.6-27b">qwen/qwen3.6-27b (200K TPD)</option>
+                        <option value="openai/gpt-oss-120b">openai/gpt-oss-120b (200K TPD)</option>
+                        <option value="openai/gpt-oss-20b">openai/gpt-oss-20b (200K TPD)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- GEMINI CONFIG SECTION -->
+            <div id="geminiConfigSection" style="display: none;">
+                <div class="input-group">
+                    <label for="geminiApiKeyInput">Gemini API Key (aistudio.google.com)</label>
+                    <div class="input-row">
+                        <input type="password" id="geminiApiKeyInput" placeholder="AIzaSy..." />
+                        <button type="button" id="toggleGeminiKeyVisibilityBtn" class="icon-btn" title="Toggle visibility" aria-label="Toggle password visibility">
+                            <svg class="eye-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="geminiModelSelect">Gemini Model</label>
+                    <select id="geminiModelSelect">
+                        <option value="gemini-3.7-flash">Gemini 3.7 Flash (Latest &amp; Most Capable)</option>
+                        <option value="gemini-3.6-flash">Gemini 3.6 Flash (Stable)</option>
+                        <option value="gemini-3.5-flash">Gemini 3.5 Flash</option>
+                        <option value="gemini-3.5-flash-lite">Gemini 3.5 Flash-Lite</option>
+                        <option value="gemini-3.1-flash-lite">Gemini 3.1 Flash-Lite</option>
+                        <option value="gemini-3.1-pro-preview">Gemini 3.1 Pro (Preview)</option>
+                        <option value="gemini-3-flash-preview">Gemini 3 Flash (Preview)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- OPENAI CONFIG SECTION -->
+            <div id="openaiConfigSection" style="display: none;">
+                <div class="input-group">
+                    <label for="openaiApiKeyInput">OpenAI API Key (platform.openai.com)</label>
+                    <div class="input-row">
+                        <input type="password" id="openaiApiKeyInput" placeholder="sk-..." />
+                        <button type="button" id="toggleOpenAIKeyVisibilityBtn" class="icon-btn" title="Toggle visibility" aria-label="Toggle password visibility">
+                            <svg class="eye-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="openaiModelSelect">OpenAI Model</label>
+                    <select id="openaiModelSelect">
+                        <option value="gpt-4o-mini">gpt-4o-mini (Fast, Lightweight &amp; Smart)</option>
+                        <option value="gpt-4o">gpt-4o (Flagship Model)</option>
+                        <option value="gpt-4.5-preview">gpt-4.5-preview (Latest Preview)</option>
+                        <option value="o3-mini">o3-mini (Reasoning Model)</option>
+                        <option value="o1">o1 (Advanced Deep Reasoning)</option>
+                        <option value="o1-mini">o1-mini (Lightweight Reasoning)</option>
+                        <option value="gpt-4-turbo">gpt-4-turbo</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- ANTHROPIC CONFIG SECTION -->
+            <div id="anthropicConfigSection" style="display: none;">
+                <div class="input-group">
+                    <label for="anthropicApiKeyInput">Anthropic API Key (console.anthropic.com)</label>
+                    <div class="input-row">
+                        <input type="password" id="anthropicApiKeyInput" placeholder="sk-ant-api03-..." />
+                        <button type="button" id="toggleAnthropicKeyVisibilityBtn" class="icon-btn" title="Toggle visibility" aria-label="Toggle password visibility">
+                            <svg class="eye-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="anthropicModelSelect">Anthropic Model</label>
+                    <select id="anthropicModelSelect">
+                        <option value="claude-3-7-sonnet-20250219">Claude 3.7 Sonnet (Hybrid Reasoning)</option>
+                        <option value="claude-3-5-sonnet-20241022">Claude 3.5 Sonnet v2 (Highly Capable)</option>
+                        <option value="claude-3-5-haiku-20241022">Claude 3.5 Haiku (Fast &amp; Lightweight)</option>
+                        <option value="claude-3-opus-20240229">Claude 3 Opus (Deep Analysis)</option>
+                        <option value="claude-3-sonnet-20240229">Claude 3 Sonnet</option>
+                        <option value="claude-3-haiku-20240307">Claude 3 Haiku</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- CUSTOM PROMPT (OPTIONAL) -->
+            <div class="input-group" style="margin-top: 10px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                    <label for="customPromptInput" style="margin-bottom: 0;">My Custom Prompt (Optional)</label>
+                    <button type="button" id="resetCustomPromptBtn" class="link-btn" title="Reset / Clear custom prompt">Reset</button>
+                </div>
+                <textarea id="customPromptInput" rows="3" placeholder="e.g. I am a Senior Software Engineer. Write concise, insightful comments (1-2 sentences). Focus on clean architecture. No emojis."></textarea>
+            </div>
+
+            <button type="button" id="saveAiKeyBtn" class="btn-primary" style="margin-top: 8px;">
+                Save &amp; Test Connection
+            </button>
+
+            <div id="statusBox" class="status-box"></div>
+        </div>
+
+        <!-- QUICK GUIDE -->
+        <div class="card">
+            <div class="card-title">How to Use</div>
+            <div class="guide-box">
+                <ol>
+                    <li>Open <strong>linkedin.com</strong> in Google Chrome.</li>
+                    <li>Click into the <strong>Comment Box</strong> of any post.</li>
+                    <li>Click the <strong>AI Comment</strong> button above the box.</li>
+                    <li>Review the AI text and click <strong>Post</strong>!</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+
+    <!-- TONE & PROMPT MANAGER VIEW (SETTINGS) -->
+    <div id="toneManagerView" style="display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <button type="button" id="backToMainViewBtn" class="link-btn" style="font-size: 11px; font-weight: 600; color: var(--primary); display: flex; align-items: center; gap: 4px;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                Back to Settings
+            </button>
+            <button type="button" id="toggleNewToneBtn" class="link-btn" style="font-size: 11px; font-weight: 600; color: var(--primary); display: flex; align-items: center; gap: 4px; padding: 4px 8px; border-radius: 6px; background: var(--primary-light); cursor: pointer; border: 1px solid rgba(10, 102, 194, 0.25);">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                Create New Tone
+            </button>
+        </div>
+
+        <!-- CREATE NEW CUSTOM TONE CARD (COLLAPSIBLE) -->
+        <div id="newToneCard" class="card" style="display: none; margin-bottom: 12px;">
+            <div class="card-title">
+                <span style="display: flex; align-items: center; gap: 4px;">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                    Create New Custom Tone
+                </span>
+                <button type="button" id="closeNewToneCardBtn" class="link-btn" style="font-size: 14px; line-height: 1; padding: 2px 6px;">&times;</button>
+            </div>
+
+            <div class="input-group">
+                <label for="newToneNameInput">Tone Name</label>
+                <div class="input-row">
+                    <input type="text" id="newToneEmojiInput" value="🧩" style="width: 48px; text-align: center; font-size: 14px;" title="Emoji icon" maxlength="3" />
+                    <input type="text" id="newToneNameInput" placeholder="e.g. Hot Take, Code Reviewer" />
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label for="newTonePromptInput">Custom Tone Prompt Instructions</label>
+                <textarea id="newTonePromptInput" rows="3" placeholder="e.g. Write a bold, counter-intuitive insight in ${language}. 1-2 sentences."></textarea>
+            </div>
+
+            <button type="button" id="addNewToneBtn" class="btn-primary" style="background: var(--primary);">
+                Add Custom Tone
+            </button>
+        </div>
+
+        <!-- EDIT EXISTING TONES -->
+        <div class="card">
+            <div class="card-title">
+                <span>Customize Tone Prompts</span>
+                <span id="toneTypeBadge" class="badge">Built-in</span>
+            </div>
+
+            <div class="input-group">
+                <label for="editToneSelect">Select Tone to Edit</label>
+                <select id="editToneSelect"></select>
+            </div>
+
+            <!-- TONE VISIBILITY CHECKBOX -->
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; padding: 4px 0;">
+                <label for="toneVisibilityCheckbox" style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 11px; color: var(--text-main); margin-bottom: 0;">
+                    <input type="checkbox" id="toneVisibilityCheckbox" style="width: 14px; height: 14px; cursor: pointer; accent-color: var(--primary);" checked />
+                    <span>Show in LinkedIn comment bar</span>
+                </label>
+                <button type="button" id="resetCurrentToneBtn" class="link-btn" style="color: var(--warning); font-size: 10px; font-weight: 600;" title="Restore this tone to its default prompt">Reset Tone</button>
+            </div>
+
+            <div class="input-group">
+                <label for="editTonePromptInput">Tone Prompt Instructions</label>
+                <textarea id="editTonePromptInput" rows="4" placeholder="Instructions for this tone..."></textarea>
+            </div>
+
+            <div style="display: flex; gap: 6px; margin-top: 8px;">
+                <button type="button" id="saveTonePromptBtn" class="btn-primary" style="flex: 1;">
+                    Save Tone Prompt
+                </button>
+                <button type="button" id="deleteCustomToneBtn" class="icon-btn" style="display: none; background: var(--error-light); color: var(--error); border-color: rgba(248, 81, 73, 0.3);" title="Delete custom tone">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                </button>
+            </div>
+        </div>
+
+        <div id="toneStatusBox" class="status-box"></div>
+    </div>
+
+    <script src="../lib/groq-client.js"></script>
+    <script src="popup.js"></script>
+</body>
+</html>
