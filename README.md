@@ -11,7 +11,7 @@ Linked Commenter AI is a lightweight, privacy-focused Chrome Extension (Manifest
 
 1. **Install**: Go to `chrome://extensions` in Chrome, turn on **Developer mode** (top right), click **Load unpacked**, and select the `extension/` folder.
 2. **Configure**: Click the **LinkedCommenter AI** icon in your toolbar, choose your AI provider (Groq, Gemini, OpenAI, Claude), paste your API key, and click **Save & Test Connection**.
-3. **Engage**: Open [LinkedIn](https://www.linkedin.com), click into any comment box, pick your tone, and hit **✨ AI Comment**!
+3. **Engage**: Open [LinkedIn](https://www.linkedin.com), click into any comment box, pick your tone, and hit **AI Comment**!
 
 ### Demo & Setup Walkthrough
 
