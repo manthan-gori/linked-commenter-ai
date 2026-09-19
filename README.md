@@ -1,4 +1,4 @@
-# Linked Commenter AI - LinkedIn Comment Assistant
+# Linked Commenter AI
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Manifest V3](https://img.shields.io/badge/Manifest-V3-blue)](https://developer.chrome.com/docs/extensions/mv3/)

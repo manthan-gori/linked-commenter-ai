@@ -1,4 +1,4 @@
-# Linked Commenter AI - LinkedIn Comment Assistant
+# Linked Commenter AI
 
 Chrome Extension (Manifest V3) for fast, intelligent, and humanized AI comment generation on LinkedIn using Multi-Model AI (Groq, Google Gemini, OpenAI, and Anthropic Claude).
 

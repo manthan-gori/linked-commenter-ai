@@ -1,7 +1,7 @@
 # Chrome Web Store Listing
 
 ## Name
-Linked Commenter AI - LinkedIn Comment Assistant
+Linked Commenter AI
 
 ## Short Description (132 chars max)
 Generate intelligent, humanized LinkedIn comments instantly using Multi-Model AI (Groq, Gemini, OpenAI, Claude) — 100% private.

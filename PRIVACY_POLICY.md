@@ -1,4 +1,4 @@
-# Privacy Policy — Linked Commenter AI - LinkedIn Comment Assistant
+# Privacy Policy — Linked Commenter AI
 
 **Last updated:** March 2026
 
